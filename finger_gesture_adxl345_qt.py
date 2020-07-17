@@ -6,23 +6,26 @@ finger gesture recognition
 # Author: Tom Sze <sze.takyu@gmail.com>
 
 import sys
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 import numpy as np
 import pyqtgraph as pg
 import csv
+
+from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, \
+    QVBoxLayout, QLineEdit, QPushButton, QSizePolicy, \
+    QSpacerItem, QApplication
 from joblib import load
-i2c_address1 = 0x1d
-i2c_address2 = 0x53
 
-is_debug = True
+is_test = True
 
-if not is_debug:
+if not is_test:
     import board
     import busio
     import adafruit_adxl34x
 
+    i2c_address1 = 0x1d
+    i2c_address2 = 0x53
     i2c = busio.I2C(board.SCL, board.SDA)
     accelerometer = adafruit_adxl34x.ADXL345(i2c, address=i2c_address1)
     accelerometer2 = adafruit_adxl34x.ADXL345(i2c, address=i2c_address2)
@@ -33,9 +36,9 @@ class MyWidget(QWidget):
     def __init__(self):
         super(MyWidget, self).__init__()
 
-        self.bStart_record = False
+        self.is_start_record = False
 
-        num_data = 100
+        num_data = 100  # graph limit
         self.x = list(range(num_data))
         self.v_1_x = [0 for _ in range(num_data)]
         self.v_1_y = [0 for _ in range(num_data)]
@@ -45,12 +48,6 @@ class MyWidget(QWidget):
         self.v_2_y = [0 for _ in range(num_data)]
         self.v_2_z = [0 for _ in range(num_data)]
 
-        self.record_1_x = []
-        self.record_1_z = []
-        self.record_1_y = []
-        self.record_2_x = []
-        self.record_2_y = []
-        self.record_2_z = []
         self.record = []
 
         self.model = load('ADXL345_xgb_gesture.joblib')
@@ -140,7 +137,7 @@ class MyWidget(QWidget):
         self.timer = QTimer()
         self.timer.setInterval(10)
         self.timer.timeout.connect(self.timer_function)
-        if not is_debug:
+        if not is_test:
             self.timer.start()
 
         """ place controls to layout """
@@ -190,7 +187,7 @@ class MyWidget(QWidget):
         self.show()
 
     def on_btn_stop_record_and_save_csv(self):
-        self.bStart_record = False
+        self.is_start_record = False
 
         csv_filename = self.txb_gesture.text() + '_record.csv'
         f = open(csv_filename, 'w')
@@ -200,9 +197,10 @@ class MyWidget(QWidget):
             writer.writerows(self.record)
 
     def on_btn_start_record(self):
-        self.bStart_record = True
+        self.is_start_record = True
 
     def timer_function(self):
+        
         # draw data
         self.x = self.x[1:]
         self.x.append(self.x[-1] + 1)
@@ -255,7 +253,7 @@ class MyWidget(QWidget):
             self.lb_gesture.setText('close')
 
         # record data
-        if self.bStart_record:
+        if self.is_start_record:
             self.record.append([accelerometer.acceleration[0],
                                 accelerometer.acceleration[1],
                                 accelerometer.acceleration[2],
