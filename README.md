@@ -14,5 +14,5 @@ To do finger gesture recognition, we need at least two of ADXL345. Since  ADXL34
 
 ADXL345 accelerometer gives x,y,z acceleration depending on the chip's orientation. See https://www.youtube.com/watch?v=T_iXLNkkjFo for more details.
 
-The program captures the accelerometer data of corresponding to the simple finger gesture of open and close in different orientation. Then Bayesian optimization tunes a xgboost classifier hyperparameters (tree depth and learning rate) for better classification.
+The program captures the accelerometer data corresponding to the simple finger gesture of open and close in different orientation. Then Bayesian optimization tunes a xgboost classifier hyperparameters (tree depth and learning rate) for better result.
 
